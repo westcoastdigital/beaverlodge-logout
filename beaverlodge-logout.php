@@ -12,8 +12,13 @@ Text Domain: beaverlodge
 
 function beaverlodge_loginout_link( $items, $args ) {
     $menu = get_theme_mod( 'logout_menu', 'bar' );
+    $redirect = get_theme_mod( 'logout_redirect', 'home' );    
     if (is_user_logged_in() && $args->theme_location == $menu) {
-        $items .= '<li><a href="'. wp_logout_url() .'">Log Out</a></li>';
+        if ( $redirect == 'home' ) {
+            $items .= '<li><a href="'. wp_logout_url( home_url() ) .'">Log Out</a></li>';
+        } else {
+            $items .= '<li><a href="'. wp_logout_url( get_permalink() ) .'">Log Out</a></li>';
+        }
     }
     elseif (!is_user_logged_in() && $args->theme_location == $menu) {
         $items .= '<li><a href="'. site_url('wp-login.php') .'">Log In</a></li>';
@@ -34,6 +39,21 @@ function beaverlodge_logout_register( $wp_customize ) {
             'label' => __( 'Login/Logout Menu' ),
             'choices' => get_registered_nav_menus(),
             'description' => __( 'Choose the menu to have the logout/login link display' ),
+    ) );
+    $wp_customize->add_setting( 
+        'logout_redirect', array(
+        'default' => 'home',
+    ) );
+    $wp_customize->add_control( 
+        'logout_redirect', array(
+            'type' => 'select',
+            'section' => 'menu_locations',
+            'label' => __( 'Logout Redirect' ),
+            'choices' => array (
+                'home' => __( 'Home Page'),
+                'current' => __( 'Current Page'),
+            ),
+            'description' => __( 'Choose where to redirect to after logging out' ),
     ) );
 }
 add_action( 'customize_register', 'beaverlodge_logout_register' );
